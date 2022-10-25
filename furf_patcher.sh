@@ -1,9 +1,10 @@
 #!/bin/bash
 
-while getopts "Dh" o; do
+while getopts "Dhd" o; do
 	case $o in
 	  D) no_delete_temp=true ;;
 	  h) show_help=true ;;
+	  d) rm -r temp ;;
 		*) ;;
 	esac
 done
@@ -14,14 +15,18 @@ patch(){
 }
 
 patch_delete_pets(){
-  rm temp/pack/assets/not_enough_updates/custom_skull_textures/
+  rm -r $working_directory/temp/pack/assets/notenoughupdates/custom_skull_textures/pets
+  rm -r $working_directory/temp/pack/assets/minecraft/mcpatcher/cit/item/pets/
 }
 
 main(){
+  working_directory=$(pwd)
+  
   # check if furfsky.zip exists
-  if [[ ! -f furfksky.zip ]]; then
+  if [[ ! -f furfsky.zip ]]; then
     help
   fi
+
   # create temp directory assuming it does not exist
   if ! ls temp > /dev/null; then
     echo "temp does not exist, creating"
@@ -31,13 +36,19 @@ main(){
     exit
   fi
 
-unzip furfsky.zip -d temp/pack
+  unzip furfsky.zip -d temp/pack
 
-patch
+  patch
 
-if [[ $no_delete_temp == "false" ]]; then
- rm -r temp
-fi
+  cd temp/pack || echo "cd failed, exiting" && exit
+
+  zip -r furf_patched.zip .
+
+  mv furf_patched.zip ../..
+  
+  if [[ $no_delete_temp == "false" ]]; then
+   rm -r temp
+  fi
 }
 
 help(){
